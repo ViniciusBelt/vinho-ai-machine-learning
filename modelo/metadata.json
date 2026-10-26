@@ -1,0 +1,171 @@
+{
+    "model_name": "Random Forest",
+    "features": [
+        "fixed acidity",
+        "volatile acidity",
+        "citric acid",
+        "residual sugar",
+        "chlorides",
+        "free sulfur dioxide",
+        "total sulfur dioxide",
+        "density",
+        "pH",
+        "sulphates",
+        "alcohol"
+    ],
+    "feature_ranges": {
+        "fixed acidity": {
+            "mean": 8.31963727329581,
+            "std": 1.7410963181276953,
+            "min": 4.6,
+            "max": 15.9,
+            "p25": 7.1,
+            "median": 7.9,
+            "p75": 9.2
+        },
+        "volatile acidity": {
+            "mean": 0.5278205128205128,
+            "std": 0.17905970415353537,
+            "min": 0.12,
+            "max": 1.58,
+            "p25": 0.39,
+            "median": 0.52,
+            "p75": 0.64
+        },
+        "citric acid": {
+            "mean": 0.2709756097560976,
+            "std": 0.19480113740531857,
+            "min": 0.0,
+            "max": 1.0,
+            "p25": 0.09,
+            "median": 0.26,
+            "p75": 0.42
+        },
+        "residual sugar": {
+            "mean": 2.53880550343965,
+            "std": 1.4099280595072798,
+            "min": 0.9,
+            "max": 15.5,
+            "p25": 1.9,
+            "median": 2.2,
+            "p75": 2.6
+        },
+        "chlorides": {
+            "mean": 0.08746654158849279,
+            "std": 0.0470653020100901,
+            "min": 0.012,
+            "max": 0.611,
+            "p25": 0.07,
+            "median": 0.079,
+            "p75": 0.09
+        },
+        "free sulfur dioxide": {
+            "mean": 15.874921826141339,
+            "std": 10.460156969809725,
+            "min": 1.0,
+            "max": 72.0,
+            "p25": 7.0,
+            "median": 14.0,
+            "p75": 21.0
+        },
+        "total sulfur dioxide": {
+            "mean": 46.46779237023139,
+            "std": 32.895324478299074,
+            "min": 6.0,
+            "max": 289.0,
+            "p25": 22.0,
+            "median": 38.0,
+            "p75": 62.0
+        },
+        "density": {
+            "mean": 0.9967466791744841,
+            "std": 0.0018873339538425554,
+            "min": 0.99007,
+            "max": 1.00369,
+            "p25": 0.9956,
+            "median": 0.99675,
+            "p75": 0.997835
+        },
+        "pH": {
+            "mean": 3.3111131957473416,
+            "std": 0.15438646490354277,
+            "min": 2.74,
+            "max": 4.01,
+            "p25": 3.21,
+            "median": 3.31,
+            "p75": 3.4
+        },
+        "sulphates": {
+            "mean": 0.6581488430268917,
+            "std": 0.16950697959010996,
+            "min": 0.33,
+            "max": 2.0,
+            "p25": 0.55,
+            "median": 0.62,
+            "p75": 0.73
+        },
+        "alcohol": {
+            "mean": 10.422983114446529,
+            "std": 1.0656675818473946,
+            "min": 8.4,
+            "max": 14.9,
+            "p25": 9.5,
+            "median": 10.2,
+            "p75": 11.1
+        }
+    },
+    "target_classes": {
+        "0": "Padrão / Comercial",
+        "1": "Alta Qualidade (Premium)"
+    },
+    "metrics_test": {
+        "Modelo": "Random Forest",
+        "Acurácia": 0.9125,
+        "Precisão": 0.6415094339622641,
+        "Recall": 0.7906976744186046,
+        "F1-Score": 0.7083333333333334,
+        "ROC-AUC": 0.9374527747460332
+    },
+    "cv_results": [
+        {
+            "Modelo": "Regressão Logística",
+            "Acurácia (CV)": "0.782 ± 0.028",
+            "Precisão (CV)": "0.367 ± 0.035",
+            "Recall (CV)": "0.810 ± 0.015",
+            "F1-Score (CV)": "0.505 ± 0.036",
+            "ROC-AUC (CV)": "0.871 ± 0.006",
+            "F1_raw": 0.5045053677960881,
+            "AUC_raw": 0.8709791246815468
+        },
+        {
+            "Modelo": "Support Vector Machine (SVM)",
+            "Acurácia (CV)": "0.801 ± 0.029",
+            "Precisão (CV)": "0.392 ± 0.044",
+            "Recall (CV)": "0.799 ± 0.049",
+            "F1-Score (CV)": "0.525 ± 0.043",
+            "ROC-AUC (CV)": "0.875 ± 0.017",
+            "F1_raw": 0.5245554526135686,
+            "AUC_raw": 0.8747252747252746
+        },
+        {
+            "Modelo": "Random Forest",
+            "Acurácia (CV)": "0.858 ± 0.021",
+            "Precisão (CV)": "0.483 ± 0.059",
+            "Recall (CV)": "0.689 ± 0.102",
+            "F1-Score (CV)": "0.567 ± 0.072",
+            "ROC-AUC (CV)": "0.896 ± 0.015",
+            "F1_raw": 0.5670237404566012,
+            "AUC_raw": 0.8961663941594736
+        },
+        {
+            "Modelo": "XGBoost",
+            "Acurácia (CV)": "0.870 ± 0.022",
+            "Precisão (CV)": "0.523 ± 0.070",
+            "Recall (CV)": "0.660 ± 0.060",
+            "F1-Score (CV)": "0.582 ± 0.061",
+            "ROC-AUC (CV)": "0.887 ± 0.013",
+            "F1_raw": 0.5819772216278241,
+            "AUC_raw": 0.8866839043309632
+        }
+    ]
+}

@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VinhoAI - Avaliação Enológica Inteligente</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍷</text></svg>">
+</head>
+<body>
+
+    <!-- Header Superior -->
+    <header class="header-bar">
+        <div class="header-container">
+            <div>
+                <div class="brand-title">
+                    <span>🍷 VinhoAI</span>
+                    <span class="brand-badge">FastAPI + ML</span>
+                </div>
+                <div class="brand-subtitle">
+                    Sistema Inteligente para Certificação e Predição de Qualidade Enológica
+                </div>
+            </div>
+            <div class="header-meta">
+                <div>Pós-Graduação em Machine Learning • <strong>PUC Minas</strong></div>
+                <div>Aluno: <strong>Vinicius Beltran</strong></div>
+                <div>Modelo: <strong>Random Forest Classifier (Ensemble)</strong></div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-container">
+
+        <!-- Contexto do Problema -->
+        <section class="context-card">
+            <h2>Objetivo do Sistema</h2>
+            <p>
+                Este sistema utiliza um modelo de Machine Learning supervisionado treinado com dados físico-químicos reais
+                (UCI Machine Learning Repository - Cortez et al., 2009) para estimar se um lote de vinho tinto atinge os
+                critérios de <strong>Alta Qualidade (Vinho Premium, nota ≥ 7)</strong> ou se enquadra na categoria 
+                <strong>Padrão / Comercial (&lt; 7)</strong>. Preencha os 11 parâmetros laboratoriais abaixo ou selecione
+                um exemplo pronto para teste rápido.
+            </p>
+        </section>
+
+        <!-- Botões de Ação Rápida (Presets) -->
+        <div class="quick-actions">
+            <button type="button" class="btn-secondary premium-preset" onclick="carregarExemploPremium()">
+                ⭐ Carregar Exemplo: Vinho Premium (Alta Qualidade)
+            </button>
+            <button type="button" class="btn-secondary" onclick="carregarExemploPadrao()">
+                📦 Carregar Exemplo: Vinho Comercial (Padrão)
+            </button>
+            <button type="button" class="btn-secondary" onclick="carregarExemploInvalido()">
+                ⚠️ Simular Entrada Inválida (Teste de Erro)
+            </button>
+            <button type="button" class="btn-secondary" onclick="limparFormulario()">
+                🔄 Limpar Formulário
+            </button>
+        </div>
+
+        <!-- Alerta de Erro -->
+        <div id="errorAlert" class="alert-box alert-danger">
+            <h4 id="errorTitle">Erro de Validação</h4>
+            <div id="errorMessage">Por favor, verifique os campos destacados abaixo.</div>
+            <ul id="errorList"></ul>
+        </div>
+
+        <!-- Painel de Resultados (Oculto inicialmente) -->
+        <div id="resultCard" class="result-card">
+            <div class="result-header">
+                <div>
+                    <h3 style="font-size: 20px; font-weight: 800; color: #1e293b;">Diagnóstico Preditivo</h3>
+                    <span style="font-size: 13px; color: #64748b;">Classificação baseada em inferência analítica via Random Forest</span>
+                </div>
+                <div id="predictionBadge" class="prediction-badge">
+                    <!-- Preenchido via JS -->
+                </div>
+            </div>
+
+            <div class="probability-bar-container">
+                <div class="prob-labels">
+                    <span>Confiança do Modelo: <strong id="probPercentage">0%</strong></span>
+                    <span id="probClassLabel">Probabilidade de Qualidade Premium</span>
+                </div>
+                <div class="progress-track">
+                    <div id="progressFill" class="progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="interpretation-box">
+                <strong style="display: block; margin-bottom: 6px; color: #0f172a;">Parecer Técnico Enológico:</strong>
+                <p id="interpretationText"></p>
+            </div>
+        </div>
+
+        <!-- Formulário de Parâmetros -->
+        <section class="form-card">
+            <div class="section-title">
+                <span>Parâmetros Físico-Químicos Laboratoriais</span>
+                <span style="font-size: 12px; font-weight: 500; color: #64748b;">* Todos os campos são de preenchimento obrigatório</span>
+            </div>
+
+            <form id="wineForm" onsubmit="event.preventDefault(); submeterPredicao();">
+                <div class="feature-grid">
+
+                    <div class="input-group">
+                        <label for="fixed_acidity">Acidez Fixa <span class="unit">(g tartárico/dm³)</span></label>
+                        <input type="number" step="0.1" class="input-control" id="fixed_acidity" name="fixed_acidity" required placeholder="Ex: 8.5">
+                        <small>Faixa típica: 4.6 a 15.9</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="volatile_acidity">Acidez Volátil <span class="unit">(g acético/dm³)</span></label>
+                        <input type="number" step="0.01" class="input-control" id="volatile_acidity" name="volatile_acidity" required placeholder="Ex: 0.28">
+                        <small>Faixa típica: 0.12 a 1.58 (menor é melhor)</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="citric_acid">Ácido Cítrico <span class="unit">(g/dm³)</span></label>
+                        <input type="number" step="0.01" class="input-control" id="citric_acid" name="citric_acid" required placeholder="Ex: 0.45">
+                        <small>Faixa típica: 0.00 a 1.00</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="residual_sugar">Açúcar Residual <span class="unit">(g/dm³)</span></label>
+                        <input type="number" step="0.1" class="input-control" id="residual_sugar" name="residual_sugar" required placeholder="Ex: 2.2">
+                        <small>Faixa típica: 0.9 a 15.5</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="chlorides">Cloretos <span class="unit">(g NaCl/dm³)</span></label>
+                        <input type="number" step="0.001" class="input-control" id="chlorides" name="chlorides" required placeholder="Ex: 0.065">
+                        <small>Faixa típica: 0.012 a 0.611</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="free_sulfur_dioxide">SO₂ Livre <span class="unit">(mg/dm³)</span></label>
+                        <input type="number" step="1" class="input-control" id="free_sulfur_dioxide" name="free_sulfur_dioxide" required placeholder="Ex: 15">
+                        <small>Faixa típica: 1 a 72</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="total_sulfur_dioxide">SO₂ Total <span class="unit">(mg/dm³)</span></label>
+                        <input type="number" step="1" class="input-control" id="total_sulfur_dioxide" name="total_sulfur_dioxide" required placeholder="Ex: 40">
+                        <small>Faixa típica: 6 a 289 (≥ SO₂ Livre)</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="density">Densidade <span class="unit">(g/cm³)</span></label>
+                        <input type="number" step="0.0001" class="input-control" id="density" name="density" required placeholder="Ex: 0.9960">
+                        <small>Faixa típica: 0.9900 a 1.0037</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="pH">Potencial Hidrogeniônico (pH)</label>
+                        <input type="number" step="0.01" class="input-control" id="pH" name="pH" required placeholder="Ex: 3.30">
+                        <small>Faixa típica: 2.74 a 4.01</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="sulphates">Sulfatos <span class="unit">(g K₂SO₄/dm³)</span></label>
+                        <input type="number" step="0.01" class="input-control" id="sulphates" name="sulphates" required placeholder="Ex: 0.82">
+                        <small>Faixa típica: 0.33 a 2.00</small>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="alcohol">Teor Alcoólico <span class="unit">(% vol.)</span></label>
+                        <input type="number" step="0.1" class="input-control" id="alcohol" name="alcohol" required placeholder="Ex: 12.5">
+                        <small>Faixa típica: 8.4 a 14.9</small>
+                    </div>
+
+                </div>
+
+                <button type="submit" id="btnSubmit" class="btn-submit">
+                    <span>🔍 Analisar e Predizer Qualidade Enológica</span>
+                </button>
+            </form>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>Projeto de Machine Learning &copy; 2026 • Vinicius Beltran • PUC Minas</p>
+        <p style="margin-top: 5px; font-size: 11px;">FastAPI Backend • Scikit-Learn Model Pipeline • Responsivo & Validação Pydantic</p>
+    </footer>
+
+    <script>
+        // Exemplos pré-configurados baseados em dados reais do dataset
+        const exemploPremium = {
+            fixed_acidity: 8.5,
+            volatile_acidity: 0.28,
+            citric_acid: 0.56,
+            residual_sugar: 2.3,
+            chlorides: 0.058,
+            free_sulfur_dioxide: 18,
+            total_sulfur_dioxide: 42,
+            density: 0.9956,
+            pH: 3.28,
+            sulphates: 0.85,
+            alcohol: 12.8
+        };
+
+        const exemploPadrao = {
+            fixed_acidity: 7.4,
+            volatile_acidity: 0.70,
+            citric_acid: 0.00,
+            residual_sugar: 1.9,
+            chlorides: 0.076,
+            free_sulfur_dioxide: 11,
+            total_sulfur_dioxide: 34,
+            density: 0.9978,
+            pH: 3.51,
+            sulphates: 0.56,
+            alcohol: 9.4
+        };
+
+        function preencherCampos(dados) {
+            ocultarAlertas();
+            for (const [key, value] of Object.entries(dados)) {
+                const el = document.getElementById(key);
+                if (el) el.value = value;
+            }
+        }
+
+        function carregarExemploPremium() {
+            preencherCampos(exemploPremium);
+        }
+
+        function carregarExemploPadrao() {
+            preencherCampos(exemploPadrao);
+        }
+
+        function carregarExemploInvalido() {
+            preencherCampos({
+                fixed_acidity: -5.0,        // Valor negativo impossível
+                volatile_acidity: 0.35,
+                citric_acid: 0.40,
+                residual_sugar: "",         // Campo vazio
+                chlorides: 0.08,
+                free_sulfur_dioxide: 50,    // Livre maior que total!
+                total_sulfur_dioxide: 20,
+                density: 0.996,
+                pH: 6.8,                   // pH neutro incompatível com vinho
+                sulphates: 0.65,
+                alcohol: 35.0              // Álcool de destilado, não vinho!
+            });
+            exibirErro("Exemplo de Entrada Inválida Carregado", [
+                "Campos intencionalmente inválidos preenchidos (valor negativo, campo vazio, SO₂ livre > total, pH fora de faixa e teor alcoólico de destilado). Clique em 'Analisar e Predizer' para testar a validação do sistema."
+            ]);
+        }
+
+        function limparFormulario() {
+            document.getElementById('wineForm').reset();
+            ocultarAlertas();
+            document.getElementById('resultCard').style.display = 'none';
+        }
+
+        function ocultarAlertas() {
+            const errBox = document.getElementById('errorAlert');
+            errBox.style.display = 'none';
+            document.getElementById('errorList').innerHTML = '';
+        }
+
+        function exibirErro(titulo, erros) {
+            const errBox = document.getElementById('errorAlert');
+            document.getElementById('errorTitle').innerText = titulo;
+            const list = document.getElementById('errorList');
+            list.innerHTML = '';
+            
+            if (Array.isArray(erros)) {
+                erros.forEach(e => {
+                    const li = document.createElement('li');
+                    li.innerText = e;
+                    list.appendChild(li);
+                });
+            } else {
+                const li = document.createElement('li');
+                li.innerText = String(erros);
+                list.appendChild(li);
+            }
+            
+            errBox.style.display = 'block';
+            errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        async function submeterPredicao() {
+            ocultarAlertas();
+            const btn = document.getElementById('btnSubmit');
+            btn.disabled = true;
+            btn.innerHTML = "<span>⏳ Processando modelo...</span>";
+
+            // Coletar dados
+            const fields = [
+                'fixed_acidity', 'volatile_acidity', 'citric_acid', 'residual_sugar',
+                'chlorides', 'free_sulfur_dioxide', 'total_sulfur_dioxide',
+                'density', 'pH', 'sulphates', 'alcohol'
+            ];
+
+            const payload = {};
+            const localErrors = [];
+
+            fields.forEach(field => {
+                const valStr = document.getElementById(field).value.trim();
+                if (valStr === '') {
+                    localErrors.push(`O campo '${field}' é obrigatório e não pode ser vazio.`);
+                } else {
+                    const num = parseFloat(valStr);
+                    if (isNaN(num)) {
+                        localErrors.push(`O valor do campo '${field}' deve ser um número válido.`);
+                    } else {
+                        payload[field] = num;
+                    }
+                }
+            });
+
+            // Validações lógicas locais imediatas
+            if (payload.fixed_acidity !== undefined && (payload.fixed_acidity < 3 || payload.fixed_acidity > 18)) {
+                localErrors.push("Acidez Fixa fora da faixa enológica plausível (3.0 a 18.0 g/dm³).");
+            }
+            if (payload.pH !== undefined && (payload.pH < 2.5 || payload.pH > 4.5)) {
+                localErrors.push("pH fora da faixa aceitável para vinhos (2.5 a 4.5).");
+            }
+            if (payload.alcohol !== undefined && (payload.alcohol < 7 || payload.alcohol > 17)) {
+                localErrors.push("Teor Alcoólico fora da faixa plausível para vinho fermentado (7.0% a 17.0% vol.).");
+            }
+            if (payload.free_sulfur_dioxide !== undefined && payload.total_sulfur_dioxide !== undefined) {
+                if (payload.total_sulfur_dioxide < payload.free_sulfur_dioxide) {
+                    localErrors.push("Erro Químico: O SO₂ Total não pode ser menor que o SO₂ Livre.");
+                }
+            }
+
+            if (localErrors.length > 0) {
+                exibirErro("Entrada Inválida Detectada", localErrors);
+                btn.disabled = false;
+                btn.innerHTML = "<span>🔍 Analisar e Predizer Qualidade Enológica</span>";
+                return;
+            }
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    let errMsg = data.detail || data.message || "Erro desconhecido na API.";
+                    if (Array.isArray(errMsg)) {
+                        errMsg = errMsg.map(e => `${e.loc ? e.loc.join('.') : ''}: ${e.msg}`);
+                    }
+                    exibirErro("Falha na Predição (API)", errMsg);
+                    btn.disabled = false;
+                    btn.innerHTML = "<span>🔍 Analisar e Predizer Qualidade Enológica</span>";
+                    return;
+                }
+
+                // Renderizar resultado
+                const resultCard = document.getElementById('resultCard');
+                const badge = document.getElementById('predictionBadge');
+                const probText = document.getElementById('probPercentage');
+                const probLabel = document.getElementById('probClassLabel');
+                const progressFill = document.getElementById('progressFill');
+                const interpText = document.getElementById('interpretationText');
+
+                if (data.prediction_class === 1) {
+                    badge.className = "prediction-badge badge-premium";
+                    badge.innerHTML = "⭐ " + data.classe_formatada;
+                    probText.innerText = data.probabilidade_premium + "%";
+                    probLabel.innerText = "Probabilidade de Vinho Premium (Nota ≥ 7)";
+                    progressFill.className = "progress-fill";
+                    progressFill.style.width = data.probabilidade_premium + "%";
+                } else {
+                    badge.className = "prediction-badge badge-standard";
+                    badge.innerHTML = "📦 " + data.classe_formatada;
+                    probText.innerText = data.probabilidade_padrao + "%";
+                    probLabel.innerText = "Probabilidade de Vinho Padrão Comercial (Nota < 7)";
+                    progressFill.className = "progress-fill standard";
+                    progressFill.style.width = data.probabilidade_padrao + "%";
+                }
+
+                interpText.innerText = data.interpretacao;
+                resultCard.style.display = 'block';
+                resultCard.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+            } catch (err) {
+                exibirErro("Erro de Conexão", "Não foi possível comunicar com a API FastAPI: " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = "<span>🔍 Analisar e Predizer Qualidade Enológica</span>";
+            }
+        }
+    </script>
+</body>
+</html>
