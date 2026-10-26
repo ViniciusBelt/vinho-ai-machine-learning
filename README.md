@@ -22,7 +22,7 @@ Inspirado no projeto DiabetesAI da disciplina, este projeto implementou do zero:
 ## 2. Estrutura de Arquivos
 
 ```text
-trabalho_final/
+vinho-ai-machine-learning/
 ├── app.py                                   # Servidor FastAPI com endpoints REST e validações
 ├── templates/
 │   └── index.html                          # Frontend Web HTML5 + JS interativo
@@ -52,18 +52,21 @@ trabalho_final/
 ## 3. Como Executar a Aplicação Web
 
 ### Passo 1: Instalação das Dependências
-No terminal (PowerShell ou Bash), a partir da pasta raiz do projeto:
+No terminal (PowerShell ou Bash), acesse a pasta do repositório:
 
 ```bash
-pip install -r trabalho_final/requirements.txt
+cd vinho-ai-machine-learning
+pip install -r requirements.txt
 ```
 
 ### Passo 2: Iniciar o Servidor FastAPI
-Execute o Uvicorn apontando para o módulo `trabalho_final.app`:
+Execute o Uvicorn a partir da pasta do repositório:
 
 ```bash
-uvicorn trabalho_final.app:app --host 127.0.0.1 --port 8000 --reload
+uvicorn app:app --host 127.0.0.1 --port 8000 --reload
 ```
+
+*(Ou a partir da pasta raiz: `uvicorn vinho-ai-machine-learning.app:app --host 127.0.0.1 --port 8000 --reload`)*
 
 ### Passo 3: Acessar no Navegador
 Abra seu navegador em:
